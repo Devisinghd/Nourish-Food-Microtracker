@@ -1,0 +1,44 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Food history · Food Microtracker{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+  <div>
+    <p class="text-xs font-bold tracking-[0.14em] text-leaf-700">YOUR JOURNEY</p>
+    <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Food history</h1>
+    <p class="mt-2 text-sm text-slate-500">A little record of the choices that make up your days.</p>
+  </div>
+  <div class="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-card">
+    {% if food_logs %}
+    <div class="divide-y divide-slate-100">
+      {% for item in food_logs %}
+      <div class="flex flex-col gap-3 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-leaf-50 text-leaf-700"><i data-lucide="salad" class="h-5 w-5"></i></span>
+          <div>
+            <p class="font-bold text-slate-800">{{ item.food_consumed.name }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ item.logged_at|date:"l, F j · g:i A" }} <span class="px-1 text-slate-300">·</span> {{ item.weight_grams|floatformat:0 }} g</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-4 gap-4 pl-[52px] text-xs sm:pl-0 sm:text-right">
+          <span><b class="block text-sm text-slate-800">{% widthratio item.weight_grams 100 item.food_consumed.calories %}</b><span class="text-slate-400">kcal</span></span>
+          <span><b class="block text-sm text-slate-800">{{ item.food_consumed.protein|floatformat:1 }}</b><span class="text-slate-400">protein g*</span></span>
+          <span><b class="block text-sm text-slate-800">{{ item.food_consumed.carbs|floatformat:1 }}</b><span class="text-slate-400">carbs g*</span></span>
+          <span><b class="block text-sm text-slate-800">{{ item.food_consumed.fats|floatformat:1 }}</b><span class="text-slate-400">fats g*</span></span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-xs text-slate-500">* Macronutrient values are per 100 g. Calories in this list reflect the serving size.</p>
+    {% else %}
+    <div class="px-6 py-14 text-center">
+      <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-leaf-50 text-leaf-700"><i data-lucide="calendar-days" class="h-6 w-6"></i></span>
+      <h2 class="mt-4 font-display text-lg font-bold text-slate-900">Your history starts today</h2>
+      <p class="mt-1 text-sm text-slate-500">Log a food and it will appear here.</p>
+      <a href="{% url 'log_food' %}" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-leaf-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-leaf-700"><i data-lucide="plus" class="h-4 w-4"></i> Log a food</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

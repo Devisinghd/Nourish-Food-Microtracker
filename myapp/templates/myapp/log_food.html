@@ -1,0 +1,120 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Log food · Food Microtracker{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl">
+  <a href="{% url 'index' %}" class="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-leaf-700"><i data-lucide="arrow-left" class="h-4 w-4"></i> Back to dashboard</a>
+  <section class="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-card">
+    <div class="border-b border-slate-100 bg-gradient-to-br from-leaf-50 via-white to-white px-6 py-7 sm:px-9 sm:py-9">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-leaf-700 shadow-sm"><i data-lucide="notebook-pen" class="h-6 w-6"></i></span>
+      <p class="mt-5 text-xs font-bold tracking-[0.15em] text-leaf-700">A MOMENT FOR YOU</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Log a food</h1>
+      <p class="mt-2 max-w-lg text-sm leading-6 text-slate-500">Add a meal from your food list, or enter its nutrition details yourself. Values are stored per 100 grams.</p>
+    </div>
+    <form method="post" class="space-y-6 px-6 py-7 sm:px-9 sm:py-8">
+      {% csrf_token %}
+      <div>
+        <label for="food-search" class="mb-2 block text-sm font-bold text-slate-800">Food item name</label>
+        <div class="relative">
+          <i data-lucide="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+          <input id="food-search" type="search" list="food-options" autocomplete="off" placeholder="Search your food list…" class="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" aria-describedby="food-help" />
+          <datalist id="food-options">
+            {% for food in foods %}<option value="{{ food.name }}" data-food-id="{{ food.id }}"></option>{% endfor %}
+          </datalist>
+          <input id="food-id" type="hidden" name="food" />
+        </div>
+        <p id="food-help" class="mt-2 text-xs text-slate-500">Choose a matching suggestion, or enable manual entry below.</p>
+      </div>
+
+      <div>
+        <label for="weight-grams" class="mb-2 block text-sm font-bold text-slate-800">Serving size <span class="font-medium text-slate-400">(grams)</span></label>
+        <div class="relative">
+          <input id="weight-grams" name="weight_grams" type="number" min="0.1" step="any" required placeholder="e.g. 150" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-14 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50 invalid:focus:border-rose-400 invalid:focus:ring-rose-50" />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">g</span>
+        </div>
+      </div>
+
+      <label for="manual-entry" class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4 transition hover:border-leaf-200 hover:bg-leaf-50/40">
+        <input id="manual-entry" name="manual_entry" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-leaf-600 focus:ring-leaf-500" />
+        <span>
+          <span class="block text-sm font-bold text-slate-800">Manually enter nutrition</span>
+          <span class="mt-1 block text-xs leading-5 text-slate-500">Create a new food with calories, macros, and optional micronutrients per 100 g.</span>
+        </span>
+      </label>
+
+      <div id="manual-fields" class="hidden space-y-5 rounded-2xl bg-slate-50 p-4 sm:p-5">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label for="manual-name" class="mb-2 block text-sm font-bold text-slate-800">Food name</label>
+            <input id="manual-name" name="food_name" maxlength="100" placeholder="e.g. Roasted chickpeas" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="calories" class="mb-2 block text-sm font-bold text-slate-800">Calories <span class="text-slate-400">kcal</span></label>
+            <input id="calories" name="calories" type="number" min="0" step="1" placeholder="164" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="protein" class="mb-2 block text-sm font-bold text-slate-800">Protein <span class="text-slate-400">g</span></label>
+            <input id="protein" name="protein" type="number" min="0" step="any" placeholder="8.9" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="carbs" class="mb-2 block text-sm font-bold text-slate-800">Carbohydrates <span class="text-slate-400">g</span></label>
+            <input id="carbs" name="carbs" type="number" min="0" step="any" placeholder="27.4" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="fats" class="mb-2 block text-sm font-bold text-slate-800">Fats <span class="text-slate-400">g</span></label>
+            <input id="fats" name="fats" type="number" min="0" step="any" placeholder="2.6" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="sodium" class="mb-2 block text-sm font-bold text-slate-800">Sodium <span class="text-slate-400">mg</span></label>
+            <input id="sodium" name="sodium" type="number" min="0" step="any" value="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="sugar" class="mb-2 block text-sm font-bold text-slate-800">Sugar <span class="text-slate-400">g</span></label>
+            <input id="sugar" name="sugar" type="number" min="0" step="any" value="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+          <div>
+            <label for="iron" class="mb-2 block text-sm font-bold text-slate-800">Iron <span class="text-slate-400">mg</span></label>
+            <input id="iron" name="iron" type="number" min="0" step="any" value="0" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-leaf-500 focus:ring-4 focus:ring-leaf-50" />
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+        <a href="{% url 'index' %}" class="inline-flex min-h-12 items-center justify-center rounded-xl px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Cancel</a>
+        <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-leaf-600 px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-leaf-700 focus:outline-none focus:ring-4 focus:ring-leaf-100"><i data-lucide="check" class="h-4 w-4"></i> Save log entry</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const foodSearch = document.getElementById("food-search");
+  const foodId = document.getElementById("food-id");
+  const manualToggle = document.getElementById("manual-entry");
+  const manualFields = document.getElementById("manual-fields");
+  const manualName = document.getElementById("manual-name");
+  const foodOptions = Array.from(document.querySelectorAll("#food-options option"));
+
+  function syncFoodChoice() {
+    const match = foodOptions.find((option) => option.value === foodSearch.value);
+    foodId.value = match ? match.dataset.foodId : "";
+  }
+
+  function toggleManualFields() {
+    manualFields.classList.toggle("hidden", !manualToggle.checked);
+    foodSearch.required = !manualToggle.checked;
+    manualName.required = manualToggle.checked;
+    for (const field of manualFields.querySelectorAll("[name='calories'], [name='protein'], [name='carbs'], [name='fats']")) {
+      field.required = manualToggle.checked;
+    }
+    foodSearch.disabled = manualToggle.checked;
+    if (manualToggle.checked) foodId.value = "";
+  }
+
+  foodSearch.addEventListener("input", syncFoodChoice);
+  manualToggle.addEventListener("change", toggleManualFields);
+  toggleManualFields();
+</script>
+{% endblock %}

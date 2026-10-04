@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" method="POST">
+      {% csrf_token %}
+      <label for="">Select a food item</label>
+      <select name="food" id="food">
+        {% for food in foods %}
+        <option value="{{food.id}}">{{food.name}}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Add</button>
+    </form>
+    <h3>Total calories</h3>
+    <div class="w-full bg-gray-300 rounded-full h-6 mt-2">
+      <div
+        id="calorie-progress"
+        class="bg-green-500 h-6 w-[70%] rounded-full"
+      ></div>
+    </div>
+    <h2>Consumed Food</h2>
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Food Item</th>
+          <th>Carbs(g)</th>
+          <th>Protein (g)</th>
+          <th>Fats(g)</th>
+          <th>Calories</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in consumed_food %}
+        <tr>
+          <td>{{item.food_consumed.name}}</td>
+          <td>{{item.food_consumed.carbs}}</td>
+          <td>{{item.food_consumed.protein}}</td>
+          <td>{{item.food_consumed.fats}}</td>
+          <td>{{item.food_consumed.caloories}}</td>
+          <td>
+            <a href="{% url 'delete' item.id %}">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>Total</td>
+          <td id="totalCarbs">0</td>
+          <td id="totalProtein">0</td>
+          <td id="totalFats">0</td>
+          <td id="totalCalories">0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div>
+      <canvas id="myChart"></canvas>
+    </div>
+  </body>
+  <script>
+    let table = document.getElementById("table");
+    let carbs = 0,
+      protein = 0,
+      fats = 0,
+      calories = 0;
+    for (let i = 1; i < table.rows.length; i++) {
+      carbs += parseFloat(table.rows[i].cells[1].innerText);
+      protein += parseFloat(table.rows[i].cells[2].innerText);
+      fats += parseFloat(table.rows[i].cells[3].innerText);
+      calories += parseFloat(table.rows[i].cells[4].innerText);
+    }
+    console.log(carbs);
+    console.log(protein);
+    console.log(fats);
+    console.log(calories);
+
+    document.getElementById("totalCarbs").innerHTML = Math.trunc(carbs);
+    document.getElementById("totalProtein").innerHTML = Math.trunc(protein);
+    document.getElementById("totalFats").innerHTML = Math.trunc(fats);
+    document.getElementById("totalCalories").innerHTML = Math.trunc(calories);
+
+    //Progress bar
+    let caloriePercent = (calories / 2000) * 100;
+    console.log("calorie percent", caloriePercent);
+    document
+      .getElementById("calorie-progress")
+      .setAttribute(
+        "class",
+        "bg-green-500 h-6 w-[" + caloriePercent + "%] rounded-full"
+      );
+
+    //Chart logic
+
+    let totalMacros = carbs + protein + fats;
+    let carbsPerentage = Math.round((carbs / totalMacros) * 100);
+    let proteinPerentage = Math.round((protein / totalMacros) * 100);
+    let fatsPerentage = Math.round((fats / totalMacros) * 100);
+    console.log("total macros", totalMacros);
+    console.log("Carbs percentage", carbsPerentage);
+    console.log("Protein percent", proteinPerentage);
+    console.log("Fats Percent", fatsPerentage);
+    const ctx = document.getElementById("myChart");
+
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Carbs", "Protein", "Fats"],
+        datasets: [
+          {
+            label: "%",
+            data: [carbsPerentage, proteinPerentage, fatsPerentage],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  </script>
+</html>

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Tracker — Luxe UI</title>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] },
+            colors: {
+              brand: {
+                50: "#eef2ff",
+                100: "#e0e7ff",
+                200: "#c7d2fe",
+                300: "#a5b4fc",
+                400: "#818cf8",
+                500: "#6366f1",
+                600: "#4f46e5",
+                700: "#4338ca",
+                800: "#3730a3",
+                900: "#312e81",
+              },
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(2,6,23,0.08)",
+              glass: "0 8px 24px rgba(15,23,42,.12)",
+            },
+            backdropBlur: {
+              xs: "2px",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --c-cyan: 34 211 238; /* tailwind cyan-400 */
+        --c-brand: 99 102 241; /* indigo-500 (your brand) */
+        --c-pink: 244 114 182; /* pink-400 */
+        --c-legend: 203 213 225; /* slate-300 */
+      }
+      /* Smooth animations and scrollbar polish */
+      html {
+        scroll-behavior: smooth;
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #6366f1, #06b6d4);
+        border-radius: 999px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    </style>
+  </head>
+
+  <body
+    class="min-h-screen bg-slate-950 text-slate-100 relative overflow-x-hidden"
+  >
+    <!-- Decorative gradient orbs -->
+    <div
+      class="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full blur-3xl opacity-30"
+      style="
+        background: radial-gradient(
+            60% 60% at 50% 50%,
+            #22d3ee 0%,
+            rgba(34, 211, 238, 0) 70%
+          ),
+          radial-gradient(
+            60% 60% at 70% 30%,
+            #6366f1 0%,
+            rgba(99, 102, 241, 0) 70%
+          );
+      "
+    ></div>
+    <div
+      class="pointer-events-none absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-25"
+      style="
+        background: radial-gradient(
+            60% 60% at 50% 50%,
+            #f472b6 0%,
+            rgba(244, 114, 182, 0) 70%
+          ),
+          radial-gradient(
+            60% 60% at 70% 30%,
+            #22c55e 0%,
+            rgba(34, 197, 94, 0) 70%
+          );
+      "
+    ></div>
+
+    <!-- App Shell -->
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Header / Hero -->
+      <header class="mb-8">
+        <div class="flex items-center justify-between gap-6">
+          <div class="flex items-center gap-3">
+            <span
+              class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-500 to-cyan-400 shadow-glass"
+            >
+              <!-- logo mark -->
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12a7 7 0 1 1 14 0v5a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-5Z"
+                  stroke="white"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M9 10h6m-6 4h6"
+                  stroke="white"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Food Tracker
+              </h1>
+              <p class="text-slate-400 text-sm">
+                Clean macro tracking with a luxe, Dribbble-grade interface.
+              </p>
+            </div>
+          </div>
+          <div class="hidden sm:flex items-center gap-3">
+            <button
+              class="rounded-xl px-4 py-2.5 bg-white/10 hover:bg-white/15 text-slate-100 border border-white/10 shadow-soft transition"
+            >
+              Today
+            </button>
+            <button
+              class="rounded-xl px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-100 border border-white/10 shadow-soft transition"
+            >
+              This week
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <!-- Left: Controls + Table -->
+        <section class="space-y-6">
+          <!-- Card: Add Food -->
+          <div
+            class="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-glass"
+          >
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Select a Food Item</h2>
+              <span
+                class="text-xs px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-200 border border-brand-400/30"
+                >Django Form</span
+              >
+            </div>
+
+            <form
+              method="POST"
+              class="mt-5 grid grid-cols-1 sm:grid-cols-5 gap-3"
+            >
+              {% csrf_token %}
+              <label for="food" class="sr-only">Choose a food</label>
+              <select
+                id="food"
+                name="food"
+                class="sm:col-span-4 w-full rounded-2xl border border-white/10 bg-white/10 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400/60 focus:border-transparent px-4 py-3"
+              >
+                {% for food in foods %}
+                <option value="{{ food.id }}" class="bg-slate-900">
+                  {{ food.name }}
+                </option>
+                {% endfor %}
+              </select>
+              <button
+                type="submit"
+                class="sm:col-span-1 w-full rounded-2xl px-4 py-3 font-semibold bg-gradient-to-tr from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white shadow-glass transition"
+              >
+                Add
+              </button>
+            </form>
+
+            <!-- Calorie Progress -->
+            <div class="mt-8">
+              <div class="flex items-end justify-between mb-2">
+                <h3 class="text-sm font-semibold tracking-wide text-slate-300">
+                  Total Calories
+                </h3>
+                <div class="text-right">
+                  <p id="calorie-text" class="text-lg font-bold">
+                    0 / 2000 kcal
+                  </p>
+                  <p class="text-xs text-slate-400">Daily target</p>
+                </div>
+              </div>
+
+              <div
+                class="relative h-4 w-full rounded-full bg-white/10 overflow-hidden"
+              >
+                <div
+                  id="calorie-progress"
+                  class="absolute left-0 top-0 h-full rounded-full"
+                  style="
+                    width: 0%;
+                    background: linear-gradient(90deg, #22d3ee, #6366f1);
+                  "
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Consumed Table -->
+          <div
+            class="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-glass"
+          >
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Consumed Food</h2>
+              <div class="flex items-center gap-2 text-xs text-slate-300">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 border border-white/10"
+                  ><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  Carb</span
+                >
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 border border-white/10"
+                  ><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Protein</span
+                >
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 border border-white/10"
+                  ><span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                  Fat</span
+                >
+              </div>
+            </div>
+
+            {% if consumed_food %}
+            <div
+              class="mt-5 overflow-hidden rounded-2xl border border-white/10"
+            >
+              <div class="overflow-x-auto">
+                <table id="table" class="min-w-full text-sm">
+                  <thead class="bg-white/10 text-slate-300">
+                    <tr>
+                      <th class="px-4 py-3 text-left font-semibold">
+                        Food Item
+                      </th>
+                      <th class="px-4 py-3 text-right font-semibold">
+                        Carbs (g)
+                      </th>
+                      <th class="px-4 py-3 text-right font-semibold">
+                        Protein (g)
+                      </th>
+                      <th class="px-4 py-3 text-right font-semibold">
+                        Fats (g)
+                      </th>
+                      <th class="px-4 py-3 text-right font-semibold">
+                        Calories
+                      </th>
+                      <th class="px-4 py-3 text-center font-semibold">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-white/5">
+                    {% for item in consumed_food %}
+                    <tr class="hover:bg-white/5 transition">
+                      <td class="px-4 py-3">{{ item.food_consumed.name }}</td>
+                      <td class="px-4 py-3 text-right">
+                        {{ item.food_consumed.carbs }}
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        {{ item.food_consumed.protein }}
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        {{ item.food_consumed.fats }}
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        {{ item.food_consumed.calories }}
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <a
+                          class="inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-xs font-semibold bg-red-500/10 text-red-200 border border-red-500/20 hover:bg-red-500/15 transition"
+                          href="{% url 'delete' item.id %}"
+                          >Delete</a
+                        >
+                      </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="bg-white/5 font-semibold">
+                      <td id="name" class="px-4 py-3 text-left">Total</td>
+                      <td id="totalCarbs" class="px-4 py-3 text-right">0</td>
+                      <td id="totalProtein" class="px-4 py-3 text-right">0</td>
+                      <td id="totalFats" class="px-4 py-3 text-right">0</td>
+                      <td id="totalCalories" class="px-4 py-3 text-right">0</td>
+                      <td class="px-4 py-3 text-center">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {% else %}
+            <p class="text-slate-400 mt-3">No food consumed yet.</p>
+            {% endif %}
+          </div>
+        </section>
+
+        <!-- Right: Charts & Insights -->
+        <section class="space-y-6">
+          <div
+            class="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-glass"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-xl font-semibold">Macronutrients Breakdown</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                  Your macro distribution for today.
+                </p>
+              </div>
+              <span
+                class="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/10 px-3 py-1.5 text-xs text-slate-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-4 w-4 opacity-80"
+                >
+                  <path
+                    d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 17.93V20h-2v-.07A8.013 8.013 0 0 1 4.07 13H4v-2h.07A8.013 8.013 0 0 1 11 4.07V4h2v.07A8.013 8.013 0 0 1 19.93 11H20v2h-.07A8.013 8.013 0 0 1 13 19.93Z"
+                  />
+                </svg>
+                Live
+              </span>
+            </div>
+
+            <div class="mt-6">
+              <canvas id="macroChart"></canvas>
+            </div>
+
+            <!-- Macro chips -->
+            <div
+              id="macroChips"
+              class="mt-6 grid grid-cols-3 gap-3 text-center"
+            >
+              <div
+                class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
+              >
+                <p class="text-xs text-slate-400">Carb</p>
+                <p id="chipCarb" class="text-lg font-bold">0%</p>
+              </div>
+              <div
+                class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
+              >
+                <p class="text-xs text-slate-400">Protein</p>
+                <p id="chipProtein" class="text-lg font-bold">0%</p>
+              </div>
+              <div
+                class="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
+              >
+                <p class="text-xs text-slate-400">Fat</p>
+                <p id="chipFat" class="text-lg font-bold">0%</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Insights / Tips card -->
+          <div
+            class="rounded-3xl border border-white/10 bg-gradient-to-tr from-white/10 to-white/5 backdrop-blur-md p-6 shadow-glass"
+          >
+            <div class="flex items-start gap-4">
+              <div
+                class="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-5 w-5"
+                >
+                  <path
+                    d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 14h-2v-2h2Zm0-4h-2V7h2Z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-semibold">Coach Tip</h3>
+                <p class="text-slate-300/90 text-sm mt-1">
+                  Aim for a protein-forward plate (30–40% of calories) to
+                  support muscle and satiety. Stay within your daily target to
+                  keep the progress compounding.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-10 text-center text-slate-500 text-xs">
+        Built with ❤ using Tailwind & Chart.js
+      </footer>
+    </div>
+
+    <!-- Logic -->
+    <script>
+      // Safely get table if it exists
+      const table = document.getElementById("table");
+      let carbs = 0,
+        protein = 0,
+        fats = 0,
+        calories = 0;
+
+      if (table && table.tBodies && table.tBodies[0]) {
+        const rows = table.tBodies[0].rows;
+        // Exclude the last summary row (Total)
+        for (let i = 0; i < rows.length - 1; i++) {
+          const cells = rows[i].cells;
+          carbs += parseFloat(cells[1].innerText) || 0;
+          protein += parseFloat(cells[2].innerText) || 0;
+          fats += parseFloat(cells[3].innerText) || 0;
+          calories += parseFloat(cells[4].innerText) || 0;
+        }
+      }
+
+      // Populate totals
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el)
+          el.textContent = Number(value.toFixed ? value.toFixed(0) : value);
+      };
+
+      setText("totalCarbs", carbs);
+      setText("totalProtein", protein);
+      setText("totalFats", fats);
+      setText("totalCalories", calories);
+
+      // Progress bar
+      const target = 2000; // you can also render this from Django if needed
+      const pct = Math.min(100, Math.max(0, (calories / target) * 100));
+      const calBar = document.getElementById("calorie-progress");
+      const calText = document.getElementById("calorie-text");
+      if (calBar) calBar.style.width = pct.toFixed(1) + "%";
+      if (calText)
+        calText.textContent = `${Math.round(calories)} / ${target} kcal`;
+
+      // Macro percentages
+      const totalMacros = carbs + protein + fats;
+      const safeDiv = (num, den) =>
+        den === 0 ? 0 : Math.round((num / den) * 100);
+      const carbP = safeDiv(carbs, totalMacros);
+      const proteinP = safeDiv(protein, totalMacros);
+      const fatsP = safeDiv(fats, totalMacros);
+
+      const chip = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val + "%";
+      };
+      chip("chipCarb", carbP);
+      chip("chipProtein", proteinP);
+      chip("chipFat", fatsP);
+
+      // START: new code added to improve chart styling
+      // ... keep the totals/macro % logic as-is above
+
+      // === Theme-aware Chart.js colors from CSS variables ===
+      const css = getComputedStyle(document.documentElement);
+      const getVar = (name) => css.getPropertyValue(name).trim(); // "34 211 238"
+      const toRGB = (triplet) => `rgb(${triplet.replace(/\s+/g, ", ")})`; // "rgb(34, 211, 238)"
+      const toRGBA = (triplet, a = 0.9) =>
+        `rgba(${triplet.replace(/\s+/g, ", ")}, ${a})`;
+
+      const cCyan = getVar("--c-cyan"); // "34 211 238"
+      const cBrand = getVar("--c-brand"); // "99 102 241"
+      const cPink = getVar("--c-pink"); // "244 114 182"
+      const cLegend = getVar("--c-legend"); // "203 213 225"
+
+      // Set sensible global defaults to match your dark theme
+      Chart.defaults.color = toRGB(cLegend);
+      Chart.defaults.font.family = "Inter, ui-sans-serif, system-ui";
+      Chart.defaults.plugins.legend.labels.color = toRGB(cLegend);
+
+      const ctx = document.getElementById("macroChart");
+      if (ctx) {
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Carb", "Protein", "Fat"],
+            datasets: [
+              {
+                label: "Macro Breakdown %",
+                data: [carbP, proteinP, fatsP],
+                borderWidth: 0,
+                hoverOffset: 8,
+                backgroundColor: [
+                  toRGBA(cCyan, 0.9), // Carb — cyan
+                  toRGBA(cBrand, 0.9), // Protein — brand indigo
+                  toRGBA(cPink, 0.9), // Fat — pink
+                ],
+                hoverBackgroundColor: [
+                  toRGBA(cCyan, 1),
+                  toRGBA(cBrand, 1),
+                  toRGBA(cPink, 1),
+                ],
+              },
+            ],
+          },
+          options: {
+            plugins: {
+              legend: {
+                display: true,
+                labels: { usePointStyle: true, pointStyle: "circle" },
+              },
+              tooltip: { enabled: true },
+            },
+            cutout: "65%",
+          },
+        });
+      }
+      // END: new code added
+      // Chart.js — donut
+      //   const ctx = document.getElementById("macroChart");
+      //   if (ctx) {
+      //     const donut = new Chart(ctx, {
+      //       type: "doughnut",
+      //       data: {
+      //         labels: ["Carb", "Protein", "Fat"],
+      //         datasets: [
+      //           {
+      //             label: "Macro Breakdown %",
+      //             data: [carbP, proteinP, fatsP],
+      //             borderWidth: 0,
+      //             hoverOffset: 8,
+      //             // Gradient-like colors (no explicit custom colors per instructions are fine here, but Chart.js requires some)
+      //             backgroundColor: [
+      //               "rgba(34, 211, 238, 0.9)",
+      //               "rgba(34, 197, 94, 0.9)",
+      //               "rgba(244, 114, 182, 0.9)",
+      //             ],
+      //           },
+      //         ],
+      //       },
+      //       options: {
+      //         plugins: {
+      //           legend: {
+      //             display: true,
+      //             labels: { color: "#cbd5e1" },
+      //           },
+      //           tooltip: { enabled: true },
+      //         },
+      //         cutout: "65%",
+      //       },
+      //     });
+      //   }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Your profile · Food Microtracker{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-4xl space-y-6">
+  <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-bold tracking-[0.14em] text-leaf-700">YOUR PERSONAL SPACE</p>
+      <h1 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Your profile</h1>
+      <p class="mt-2 text-sm text-slate-500">Make Nourish fit your routine and your nutrition goals.</p>
+    </div>
+    <div class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-card">
+      <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-leaf-100 font-display text-lg font-extrabold text-leaf-800">{{ user.first_name|default:user.username|slice:":1"|upper }}</span>
+      <div>
+        <p class="text-sm font-bold text-slate-900">{{ user.get_full_name|default:user.username }}</p>
+        <p class="text-xs text-slate-500">{{ logged_food_count }} food log{{ logged_food_count|pluralize }} · Member since {{ user.date_joined|date:"M Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+    <section class="rounded-3xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+      <div class="mb-6 flex items-center gap-3 border-b border-slate-100 pb-5">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf-50 text-leaf-700"><i data-lucide="user-round" class="h-5 w-5"></i></span>
+        <div>
+          <h2 class="font-display text-lg font-bold text-slate-900">Account details</h2>
+          <p class="text-sm text-slate-500">Your profile is attached to your signed-in account.</p>
+        </div>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2">
+        {% for field in account_form %}
+        <div class="{% if field.name == 'email' %}sm:col-span-2{% endif %}">
+          <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="mt-1.5 text-xs font-medium text-rose-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="rounded-3xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+      <div class="mb-6 flex items-center gap-3 border-b border-slate-100 pb-5">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><i data-lucide="target" class="h-5 w-5"></i></span>
+        <div>
+          <h2 class="font-display text-lg font-bold text-slate-900">Daily nutrition goals</h2>
+          <p class="text-sm text-slate-500">These personal targets update the progress and alerts on your dashboard.</p>
+        </div>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for field in goals_form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ field.label }}</label>
+          <div class="relative">
+            {{ field }}
+            <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">{% if field.name == "calorie_goal" %}kcal{% elif field.name == "sodium_goal" or field.name == "iron_goal" %}mg{% else %}g{% endif %}</span>
+          </div>
+          {% for error in field.errors %}<p class="mt-1.5 text-xs font-medium text-rose-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      <p class="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-500">Nutrition goals are personal tracking preferences, not medical advice. Adjust them to match your own needs.</p>
+    </section>
+
+    {% if account_form.non_field_errors or goals_form.non_field_errors %}
+    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      {{ account_form.non_field_errors }} {{ goals_form.non_field_errors }}
+    </div>
+    {% endif %}
+    <div class="flex justify-end">
+      <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-leaf-600 px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-leaf-700 focus:outline-none focus:ring-4 focus:ring-leaf-100"><i data-lucide="save" class="h-4 w-4"></i> Save my profile</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

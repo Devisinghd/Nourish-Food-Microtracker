@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8faf8" />
+    <title>{% block title %}Food Microtracker{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["DM Sans", "ui-sans-serif", "system-ui"],
+              display: ["Manrope", "ui-sans-serif", "system-ui"],
+            },
+            colors: {
+              leaf: {
+                50: "#f1f8f2",
+                100: "#e2f1e4",
+                500: "#4f9c68",
+                600: "#347d4d",
+                700: "#28643d",
+                800: "#214f33",
+              },
+            },
+            boxShadow: {
+              card: "0 8px 30px rgba(30, 55, 38, 0.055)",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="min-h-screen bg-[#f8faf8] font-sans text-slate-800 antialiased">
+    <div class="min-h-screen">
+      <header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8" aria-label="Main navigation">
+          <a href="{% url 'index' %}" class="group flex items-center gap-3" aria-label="Food Microtracker dashboard">
+            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-leaf-600 text-white shadow-sm transition group-hover:bg-leaf-700">
+              <i data-lucide="leaf" class="h-5 w-5"></i>
+            </span>
+            <span>
+              <span class="block font-display text-base font-extrabold tracking-tight text-slate-900">nourish<span class="text-leaf-600">.</span></span>
+              <span class="hidden text-[11px] font-medium tracking-wide text-slate-500 sm:block">FOOD MICROTRACKER</span>
+            </span>
+          </a>
+          <div class="hidden items-center gap-1 md:flex">
+            <a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}bg-leaf-50 text-leaf-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %} rounded-xl px-4 py-2.5 text-sm font-semibold transition">Dashboard</a>
+            <a href="{% url 'log_food' %}" class="{% if request.resolver_match.url_name == 'log_food' %}bg-leaf-50 text-leaf-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %} rounded-xl px-4 py-2.5 text-sm font-semibold transition">Log food</a>
+            <a href="{% url 'history' %}" class="{% if request.resolver_match.url_name == 'history' %}bg-leaf-50 text-leaf-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %} rounded-xl px-4 py-2.5 text-sm font-semibold transition">History</a>
+            <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}bg-leaf-50 text-leaf-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-slate-900{% endif %} rounded-xl px-4 py-2.5 text-sm font-semibold transition">Profile</a>
+            {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post" class="ml-2">
+              {% csrf_token %}
+              <button type="submit" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700">Log out</button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}" class="ml-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Log in</a>
+            <a href="{% url 'register' %}" class="rounded-xl bg-leaf-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-leaf-700">Create account</a>
+            {% endif %}
+          </div>
+          <details class="relative md:hidden">
+            <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50" aria-label="Open navigation menu">
+              <i data-lucide="menu" class="h-5 w-5"></i>
+            </summary>
+            <div class="absolute right-0 top-12 z-40 w-48 rounded-2xl border border-slate-200 bg-white p-2 shadow-card">
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-leaf-50" href="{% url 'index' %}">Dashboard</a>
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-leaf-50" href="{% url 'log_food' %}">Log food</a>
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-leaf-50" href="{% url 'history' %}">History</a>
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-leaf-50" href="{% url 'profile' %}">Profile</a>
+              {% if user.is_authenticated %}
+              <form action="{% url 'logout' %}" method="post" class="border-t border-slate-100 pt-2">
+                {% csrf_token %}
+                <button type="submit" class="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-700 hover:bg-rose-50">Log out</button>
+              </form>
+              {% else %}
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-leaf-50" href="{% url 'login' %}">Log in</a>
+              <a class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-leaf-700 hover:bg-leaf-50" href="{% url 'register' %}">Create account</a>
+              {% endif %}
+            </div>
+          </details>
+        </nav>
+      </header>
+
+      {% if messages %}
+      <div class="mx-auto max-w-7xl space-y-2 px-4 pt-5 sm:px-6 lg:px-8" aria-live="polite">
+        {% for message in messages %}
+        <div class="flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm {% if message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800{% else %}border-leaf-100 bg-leaf-50 text-leaf-800{% endif %}">
+          <i data-lucide="{% if message.tags == 'error' %}circle-alert{% else %}circle-check{% endif %}" class="mt-0.5 h-4 w-4 shrink-0"></i>
+          <p>{{ message }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="mx-auto max-w-7xl px-4 pb-8 text-center text-xs text-slate-400 sm:px-6 lg:px-8">
+        Small steps, nourishing days.
+      </footer>
+    </div>
+    <script>
+      if (window.lucide) lucide.createIcons();
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
